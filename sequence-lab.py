@@ -19,11 +19,17 @@ RED = (255, 0, 0)
 # Game control vars
 game_has_started = False
 
+# Var to control if player is guessing the fields
+wait_for_input = False
+
 # Var for position of the specific highlighted field
 colour_field = None
 
 # Size for each memory field
 blockSizeForField = 100
+
+# Highlight duration (of a colour field) in milliseconds
+highlight_dur = 1000
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -36,21 +42,17 @@ def grid():
                 pygame.draw.rect(window, RED, rectangle)
             else:
                 pygame.draw.rect(window, WHITE, rectangle, 1)
-            '''
-            # Create rectangle at position x, y (with size blockSize * blockSize)
-            rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
-            # Create rectangle at window
-            # width = 1: only the border is drawn
-            pygame.draw.rect(window, WHITE, rectangle, 1)
-            '''
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, colour_field
+    global game_has_started, colour_field, wait_for_input
 
     # Set the game as started
     game_has_started = True
     print(f"The sequence game has started!")
+
+    # False since the user is not in input state if game starts
+    wait_for_input = False
 
     # Select a random field
     # First generate a random number (0 to 2) since it's 3x3 and mult by block size of a field
@@ -61,6 +63,17 @@ def game_start():
     # Store the coordinates of the highlighted field
     colour_field = (x, y)
 
+    pygame.time.set_timer(pygame.USEREVENT, highlight_dur)
+
+
+def check_for_input(pos):
+        global wait_for_input
+        if colour_field[0] <= pos[0] <= colour_field[0] + blockSizeForField and \
+            colour_field[1] <= pos[1] <= colour_field[1] + blockSizeForField:
+            print("Nice!")
+        else:
+            print("Not so good")
+        wait_for_input = False
 
 # Loop
 while True:
@@ -77,6 +90,15 @@ while True:
             if event.key == pygame.K_SPACE and not game_has_started:
                 # Start the game
                 game_start()
+
+        # Player event
+        if event.type == pygame.USEREVENT:
+            # Set for input state
+            wait_for_input = True
+            pygame.time.set_timer(pygame.USEREVENT, 0)
+
+        if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
+            check_for_input(pygame.mouse.get_pos())
 
     # Background colour
     window.fill(BLACK)
