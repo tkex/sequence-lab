@@ -6,8 +6,8 @@ import sys
 pygame.init()
 
 # Define pygame window props
-width, heigth = 300, 300
-window = pygame.display.set_mode((width, heigth))
+width, height = 300, 300
+window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Sequence lab!")
 
 # Define colours
@@ -19,7 +19,7 @@ def grid():
     blockSizeForField = 100
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, width, blockSizeForField):
-        for y in range(0, heigth, blockSizeForField):
+        for y in range(0, height, blockSizeForField):
             # Create rectangle at position x, y (with size blockSize * blockSize)
             rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
             # Create rectangle at window
