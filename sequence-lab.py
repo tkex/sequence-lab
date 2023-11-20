@@ -31,6 +31,8 @@ blockSizeForField = 100
 # Highlight duration (of a colour field) in milliseconds
 highlight_dur = 1000
 
+save_highlighted_field = None
+
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, width, blockSizeForField):
@@ -45,7 +47,7 @@ def grid():
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, colour_field, wait_for_input
+    global game_has_started, colour_field, wait_for_input, save_highlighted_field
 
     # Set the game as started
     game_has_started = True
@@ -62,14 +64,16 @@ def game_start():
 
     # Store the coordinates of the highlighted field
     colour_field = (x, y)
+    save_highlighted_field = (x, y)
 
     pygame.time.set_timer(pygame.USEREVENT, highlight_dur)
 
 
 def check_for_input(pos):
         global wait_for_input, colour_field
-        if colour_field[0] <= pos[0] <= colour_field[0] + blockSizeForField and \
-            colour_field[1] <= pos[1] <= colour_field[1] + blockSizeForField:
+
+        if save_highlighted_field[0] <= pos[0] <= save_highlighted_field[0] + blockSizeForField and \
+                save_highlighted_field[1] <= pos[1] <= save_highlighted_field[1] + blockSizeForField:
             print("Nice!")
         else:
             print("Not so good")
