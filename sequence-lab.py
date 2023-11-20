@@ -67,13 +67,18 @@ def game_start():
 
 
 def check_for_input(pos):
-        global wait_for_input
+        global wait_for_input, colour_field
         if colour_field[0] <= pos[0] <= colour_field[0] + blockSizeForField and \
             colour_field[1] <= pos[1] <= colour_field[1] + blockSizeForField:
             print("Nice!")
         else:
             print("Not so good")
+
+        # State input is over
         wait_for_input = False
+
+        # Set colour field after guessing back to black
+        colour_field = None
 
 # Loop
 while True:
