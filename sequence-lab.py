@@ -100,6 +100,9 @@ while True:
         if event.type == pygame.USEREVENT:
             # Set for input state
             wait_for_input = True
+            # Set field to none (BLACK) if user event occurs
+            colour_field = None
+            # Stop timer the moment once user event happens
             pygame.time.set_timer(pygame.USEREVENT, 0)
 
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
