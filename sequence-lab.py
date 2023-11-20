@@ -23,7 +23,7 @@ game_has_started = False
 wait_for_input = False
 
 # Var for position of the specific highlighted field
-colour_field = None
+#colour_field = None
 
 # Size for each memory field
 blockSizeForField = 100
@@ -31,15 +31,18 @@ blockSizeForField = 100
 # Highlight duration (of a colour field) in milliseconds
 highlight_dur = 1000
 
-save_highlighted_field = None
+# Save highlighted fields
+highlighted_field = None
 
+# Var to keep track of the last highlighted field
+last_highlighted_field = None
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, width, blockSizeForField):
         for y in range(0, height, blockSizeForField):
             # Create rectangle at position x, y (with size blockSize * blockSize)
             rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
-            if (x, y) == colour_field:
+            if (x, y) == highlighted_field:
                 # Highlight the selected field
                 pygame.draw.rect(window, RED, rectangle)
             else:
@@ -47,7 +50,7 @@ def grid():
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, colour_field, wait_for_input, save_highlighted_field
+    global game_has_started, wait_for_input, highlighted_field, last_highlighted_field
 
     # Set the game as started
     game_has_started = True
@@ -63,26 +66,32 @@ def game_start():
     y = random.randint(0, 2) * blockSizeForField
 
     # Store the coordinates of the highlighted field
-    colour_field = (x, y)
-    save_highlighted_field = (x, y)
+    highlighted_field = (x, y)
+
+    # Store the position of the highlighted field
+    last_highlighted_field = highlighted_field
 
     pygame.time.set_timer(pygame.USEREVENT, highlight_dur)
 
 
 def check_for_input(pos):
-        global wait_for_input, colour_field
+        global wait_for_input, last_highlighted_field
 
-        if save_highlighted_field[0] <= pos[0] <= save_highlighted_field[0] + blockSizeForField and \
-                save_highlighted_field[1] <= pos[1] <= save_highlighted_field[1] + blockSizeForField:
-            print("Nice!")
-        else:
-            print("Not so good")
+        # Check that save_highlighted_field is not None before checking
+        if last_highlighted_field:
+            # Check if mouse click position is within the bounds of the highlighted field
+            # For X-Axis (top [0]) and Y-Axis (line under [1]):
+            if last_highlighted_field[0] <= pos[0] <= last_highlighted_field[0] + blockSizeForField and \
+                    last_highlighted_field[1] <= pos[1] <= last_highlighted_field[1] + blockSizeForField:
+                print("Nice!")
+                # Correct guess -- reset for next round
+                highlighted_field = None
+                wait_for_input = False
+            else:
+                print("Not so good")
 
-        # State input is over
-        wait_for_input = False
-
-        # Set colour field after guessing back to black
-        colour_field = None
+        # Reset after guessing
+        last_highlighted_field = None
 
 # Loop
 while True:
@@ -104,10 +113,10 @@ while True:
         if event.type == pygame.USEREVENT:
             # Set for input state
             wait_for_input = True
-            # Set field to none (BLACK) if user event occurs
-            colour_field = None
-            # Stop timer the moment once user event happens
-            pygame.time.set_timer(pygame.USEREVENT, 0)
+            # Set field to none (BLACK) when the timer event occurs
+            highlighted_field = None
+            # Stop the timer once the user event happens
+            #pygame.time.set_timer(pygame.USEREVENT, 0)
 
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
             check_for_input(pygame.mouse.get_pos())
