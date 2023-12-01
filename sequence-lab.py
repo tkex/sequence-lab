@@ -36,6 +36,9 @@ highlighted_field = None
 
 # Var to keep track of the last highlighted field
 last_highlighted_field = None
+
+feedback_highlight = None
+
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, width, blockSizeForField):
@@ -47,6 +50,11 @@ def grid():
                 pygame.draw.rect(window, RED, rectangle)
             else:
                 pygame.draw.rect(window, WHITE, rectangle, 1)
+
+    if feedback_highlight:
+        pygame.draw.rect(window, feedback_highlight[1],
+                         pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], blockSizeForField,
+                                     blockSizeForField))
 
 def game_start():
     # Retrieve global defined vars (above)
@@ -75,23 +83,40 @@ def game_start():
 
 
 def check_for_input(pos):
-        global wait_for_input, last_highlighted_field
+    global wait_for_input, last_highlighted_field, feedback_highlight
 
-        # Check that save_highlighted_field is not None before checking
+    # Calculate position of the clicked field
+    # Check if mouse click position is within the bounds of the highlighted field
+    # For X-Axis (top [0]) and Y-Axis (line under [1]):
+    clicked_field_x = pos[0] // blockSizeForField * blockSizeForField
+    clicked_field_y = pos[1] // blockSizeForField * blockSizeForField
+
+    clicked_field = (clicked_field_x, clicked_field_y)
+
+    # Check that save_highlighted_field is not None before checking
+    if last_highlighted_field:
         if last_highlighted_field:
-            # Check if mouse click position is within the bounds of the highlighted field
-            # For X-Axis (top [0]) and Y-Axis (line under [1]):
-            if last_highlighted_field[0] <= pos[0] <= last_highlighted_field[0] + blockSizeForField and \
-                    last_highlighted_field[1] <= pos[1] <= last_highlighted_field[1] + blockSizeForField:
+            if last_highlighted_field == clicked_field:
                 print("Nice!")
-                # Correct guess -- reset for next round
-                highlighted_field = None
-                wait_for_input = False
+                feedback_highlight = (clicked_field, RED)
             else:
                 print("Not so good")
+                feedback_highlight = (clicked_field, WHITE)
 
-        # Reset after guessing
-        last_highlighted_field = None
+        # Show  Feedback with 500 ms delay (before last_highlighted_field is resetted)
+        pygame.time.set_timer(pygame.USEREVENT + 1, 500)
+
+
+#  End of feedback light and reset it (will be called from timer event in check for input)
+def end_feedback():
+    global feedback_highlight, last_highlighted_field
+
+    # Reset
+    feedback_highlight = None
+    last_highlighted_field = None
+
+    # Stop Feedback event
+    pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
 # Loop
 while True:
@@ -120,6 +145,10 @@ while True:
 
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
             check_for_input(pygame.mouse.get_pos())
+
+        # Will be called after 500ms from ccheck for input
+        if event.type == pygame.USEREVENT + 1:
+            end_feedback()
 
     # Background colour
     window.fill(BLACK)
