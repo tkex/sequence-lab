@@ -47,6 +47,10 @@ current_sequence_index = 0
 highlight_duration = 1000  # Duration of highlighting a field in milliseconds
 feedback_duration = 200    # Duration of the feedback in milliseconds
 
+# Global var for current lvl
+current_level = 0
+
+
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, width, blockSizeForField):
@@ -66,6 +70,8 @@ def grid():
 
 
 def add_new_field_to_sequence():
+    global current_level
+
     # Random field
     x = random.randint(0, 2) * blockSizeForField
     y = random.randint(0, 2) * blockSizeForField
@@ -73,10 +79,17 @@ def add_new_field_to_sequence():
     # Add field
     sequence_of_fields.append((x, y))
 
+    # Update the current level
+    current_level += 1
+    print(f"(Reached) Level: {current_level}")
+
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index
+    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index, current_level
+
+    # Reset current level (Set to null)
+    current_level = 0
 
     # Set the game as started
     game_has_started = True
@@ -153,7 +166,7 @@ def check_for_input(pos):
 
 
 
-#  End of feedback light and reset it (will be called from timer event in check for input)
+# End of feedback light and reset it (will be called from timer event in check for input)
 def end_feedback():
     global feedback_highlight, last_highlighted_field
 
