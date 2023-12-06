@@ -36,8 +36,16 @@ highlighted_field = None
 
 # Var to keep track of the last highlighted field
 last_highlighted_field = None
-
 feedback_highlight = None
+
+# List to save the sequence of fields
+sequence_of_fields = []
+# Index for the current step in the sequence
+current_sequence_index = 0
+
+# Global variables for the duration of the display and feedback
+highlight_duration = 1000  # Duration of highlighting a field in milliseconds
+feedback_duration = 200    # Duration of the feedback in milliseconds
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -56,13 +64,30 @@ def grid():
                          pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], blockSizeForField,
                                      blockSizeForField))
 
+
+def add_new_field_to_sequence():
+    # Random field
+    x = random.randint(0, 2) * blockSizeForField
+    y = random.randint(0, 2) * blockSizeForField
+
+    # Add field
+    sequence_of_fields.append((x, y))
+
+
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, wait_for_input, highlighted_field, last_highlighted_field
+    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index
 
     # Set the game as started
     game_has_started = True
     print(f"The sequence game has started!")
+
+    # Reset the sequence when restarting the game
+    sequence_of_fields = []
+    current_sequence_index = 0
+    add_new_field_to_sequence()
+    highlighted_field = sequence_of_fields[current_sequence_index]
+    last_highlighted_field = None
 
     # False since the user is not in input state if game starts
     wait_for_input = False
@@ -70,20 +95,20 @@ def game_start():
     # Select a random field
     # First generate a random number (0 to 2) since it's 3x3 and mult by block size of a field
     # to get a rand coordinate x and y in (!) the grid
-    x = random.randint(0, 2) * blockSizeForField
-    y = random.randint(0, 2) * blockSizeForField
+    #x = random.randint(0, 2) * blockSizeForField
+    #y = random.randint(0, 2) * blockSizeForField
 
     # Store the coordinates of the highlighted field
-    highlighted_field = (x, y)
+    #highlighted_field = (x, y)
 
     # Store the position of the highlighted field
     last_highlighted_field = highlighted_field
 
-    pygame.time.set_timer(pygame.USEREVENT, highlight_dur)
+    pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
 
 def check_for_input(pos):
-    global wait_for_input, last_highlighted_field, feedback_highlight
+    global wait_for_input, feedback_highlight, current_sequence_index, game_has_started
 
     # Calculate position of the clicked field
     # Check if mouse click position is within the bounds of the highlighted field
@@ -94,17 +119,38 @@ def check_for_input(pos):
     clicked_field = (clicked_field_x, clicked_field_y)
 
     # Check that save_highlighted_field is not None before checking
-    if last_highlighted_field:
-        if last_highlighted_field:
-            if last_highlighted_field == clicked_field:
-                print("Nice!")
-                feedback_highlight = (clicked_field, RED)
-            else:
-                print("Not so good")
-                feedback_highlight = (clicked_field, WHITE)
+    if sequence_of_fields[current_sequence_index] == clicked_field:
+        print("Nice!")
+        # Set feedback highlight to red for a correct guess
+        feedback_highlight = (clicked_field, RED)
 
-        # Show  Feedback with 500 ms delay (before last_highlighted_field is resetted)
-        pygame.time.set_timer(pygame.USEREVENT + 1, 500)
+        # Increment the sequence index
+        current_sequence_index += 1
+
+        # Check if the whole sequence has been guessed correctly
+        if current_sequence_index == len(sequence_of_fields):
+            # Add new sequence field
+            add_new_field_to_sequence()
+
+            # Reset sequence index
+            current_sequence_index = 0
+
+            # Set timer to display the next field in sequence
+            pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+
+        # Set timer for the feedback to be displayed
+        pygame.time.set_timer(pygame.USEREVENT + 1, 200)
+    else:
+        print("Game over")
+        # End game if the guess is wrong
+        game_has_started = False
+
+        # Set feedback highlight to white for incorrect guess
+        feedback_highlight = (clicked_field, WHITE)
+
+        # Set timer for the feedback to be displayed
+        pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
+
 
 
 #  End of feedback light and reset it (will be called from timer event in check for input)
@@ -117,6 +163,7 @@ def end_feedback():
 
     # Stop Feedback event
     pygame.time.set_timer(pygame.USEREVENT + 1, 0)
+
 
 # Loop
 while True:
@@ -136,12 +183,19 @@ while True:
 
         # Player event
         if event.type == pygame.USEREVENT:
-            # Set for input state
-            wait_for_input = True
-            # Set field to none (BLACK) when the timer event occurs
-            highlighted_field = None
-            # Stop the timer once the user event happens
-            #pygame.time.set_timer(pygame.USEREVENT, 0)
+            if current_sequence_index < len(sequence_of_fields):
+                highlighted_field = sequence_of_fields[current_sequence_index]
+                current_sequence_index += 1
+                # Only set the timer if there are other fields in the sequence
+                if current_sequence_index < len(sequence_of_fields):
+                    pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+            else:
+                # Exits the display of the sequence and waits for user input
+                wait_for_input = True
+                highlighted_field = None
+                current_sequence_index = 0
+                # Stop timer
+                pygame.time.set_timer(pygame.USEREVENT, 0)
 
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
             check_for_input(pygame.mouse.get_pos())
