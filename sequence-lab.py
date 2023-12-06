@@ -68,20 +68,27 @@ def grid():
                          pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], blockSizeForField,
                                      blockSizeForField))
 
-
 def add_new_field_to_sequence():
     global current_level
 
-    # Random field
-    x = random.randint(0, 2) * blockSizeForField
-    y = random.randint(0, 2) * blockSizeForField
+    while True:
+        # Random field
+        x = random.randint(0, 2) * blockSizeForField
+        y = random.randint(0, 2) * blockSizeForField
+        
+        new_field = (x, y)
 
-    # Add field
-    sequence_of_fields.append((x, y))
+        # Check if new field is different from the last field in the sequence
+        # so that no consecutive overlapping fields are to be guessed
+        if not sequence_of_fields or new_field != sequence_of_fields[-1]:
+            # Add field
+            sequence_of_fields.append(new_field)
 
-    # Update the current level
-    current_level += 1
-    print(f"(Reached) Level: {current_level}")
+            # Update the current level
+            current_level += 1
+            print(f"(Reached) Level: {current_level}")
+            break
+
 
 
 def game_start():
