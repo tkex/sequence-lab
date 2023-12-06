@@ -75,7 +75,7 @@ def add_new_field_to_sequence():
         # Random field
         x = random.randint(0, 2) * blockSizeForField
         y = random.randint(0, 2) * blockSizeForField
-        
+
         new_field = (x, y)
 
         # Check if new field is different from the last field in the sequence
@@ -171,6 +171,8 @@ def check_for_input(pos):
         # Set timer for the feedback to be displayed
         pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
 
+        # Disable further input (!)
+        wait_for_input = False
 
 
 # End of feedback light and reset it (will be called from timer event in check for input)
@@ -220,9 +222,15 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
             check_for_input(pygame.mouse.get_pos())
 
-        # Will be called after 500ms from ccheck for input
+        # Will be called after 500ms from check for input
         if event.type == pygame.USEREVENT + 1:
             end_feedback()
+
+        # Check for Enter key to restart the game
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN and not game_has_started:
+                # Restart game
+                game_start()
 
     # Background colour
     window.fill(BLACK)
