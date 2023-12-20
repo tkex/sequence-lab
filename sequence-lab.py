@@ -5,6 +5,11 @@ import random
 
 # Initialize
 pygame.init()
+pygame.mixer.init()
+
+# Laden der Win/Lose Soundeffekte
+reward_sound = pygame.mixer.Sound("audio/belohnungston.wav")
+lose_sound = pygame.mixer.Sound("audio/verlorenton.wav")
 
 # Define pygame window props
 width, height = 300, 300
@@ -53,14 +58,11 @@ current_level = 0
 # Soundmodus
 sound_mode = 0
 
-# Abspielen von Sounds
-def play_sound(sound_id):
-    if sound_mode == 2:
-        # In Modus 2 dann 9 verschiedene Sounds
-        print(f"Debug-Log: Sound {sound_id} wird abgespielt")
-    elif sound_mode == 3:
-        # In Modus 3 einen dumpfen Sound
-        print("Debug-Log: Normaler Sound wird abgespielt")
+# Playing sounds
+def play_sound(sound):
+    # Play only sound if in modi 2 or 3
+    if sound_mode in [2, 3]:
+        sound.play()
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -152,6 +154,8 @@ def check_for_input(pos):
     # Check that save_highlighted_field is not None before checking
     if sequence_of_fields[current_sequence_index] == clicked_field:
         print("Nice!")
+
+
         # Set feedback highlight to red for a correct guess
         feedback_highlight = (clicked_field, RED)
 
@@ -160,6 +164,11 @@ def check_for_input(pos):
 
         # Check if the whole sequence has been guessed correctly
         if current_sequence_index == len(sequence_of_fields):
+
+            # Play the reward sound if the sequence is guessed correctly
+            # (only in sound_modus)
+            play_sound(reward_sound)
+
             # Add new sequence field
             add_new_field_to_sequence()
 
@@ -173,6 +182,11 @@ def check_for_input(pos):
         pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
     else:
         print("Game over")
+
+        # Play the losing sound if an incorrect field is selected
+        # (only in sound_modus)
+        play_sound(lose_sound)
+
         # End game if the guess is wrong
         game_has_started = False
 
