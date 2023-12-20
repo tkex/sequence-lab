@@ -45,7 +45,7 @@ current_sequence_index = 0
 
 # Global variables for the duration of the display and feedback
 highlight_duration = 1000  # Duration of highlighting a field in milliseconds
-feedback_duration = 200    # Duration of the feedback in milliseconds
+feedback_duration = 1000    # Duration of the feedback in milliseconds
 
 # Global var for current lvl
 current_level = 0
@@ -159,7 +159,7 @@ def check_for_input(pos):
             pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
         # Set timer for the feedback to be displayed
-        pygame.time.set_timer(pygame.USEREVENT + 1, 200)
+        pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
     else:
         print("Game over")
         # End game if the guess is wrong
