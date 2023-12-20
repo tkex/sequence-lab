@@ -45,11 +45,22 @@ current_sequence_index = 0
 
 # Global variables for the duration of the display and feedback
 highlight_duration = 1000  # Duration of highlighting a field in milliseconds
-feedback_duration = 1000    # Duration of the feedback in milliseconds
+feedback_duration = 500    # Duration of the feedback in milliseconds
 
 # Global var for current lvl
 current_level = 0
 
+# Soundmodus
+sound_mode = 0
+
+# Abspielen von Sounds
+def play_sound(sound_id):
+    if sound_mode == 2:
+        # In Modus 2 dann 9 verschiedene Sounds
+        print(f"Debug-Log: Sound {sound_id} wird abgespielt")
+    elif sound_mode == 3:
+        # In Modus 3 einen dumpfen Sound
+        print("Debug-Log: Normaler Sound wird abgespielt")
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -195,6 +206,18 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+        # Erkennung der Tastendrücke für Soundmodi
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_1:
+                sound_mode = 1
+                print("Modus 1 aktiviert: Kein Sound")
+            elif event.key == pygame.K_2:
+                sound_mode = 2
+                print("Modus 2 aktiviert: 9 verschiedene Sounds")
+            elif event.key == pygame.K_3:
+                sound_mode = 3
+                print("Modus 3 aktiviert: Dumpfer Sound")
 
         # Space
         if event.type == pygame.KEYDOWN:
