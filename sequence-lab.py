@@ -164,22 +164,9 @@ def game_start():
     current_sequence_index = 0
     add_new_field_to_sequence()
     highlighted_field = sequence_of_fields[current_sequence_index]
-    last_highlighted_field = None
 
     # False since the user is not in input state if game starts
     wait_for_input = False
-
-    # Select a random field
-    # First generate a random number (0 to 2) since it's 3x3 and mult by block size of a field
-    # to get a rand coordinate x and y in (!) the grid
-    #x = random.randint(0, 2) * blockSizeForField
-    #y = random.randint(0, 2) * blockSizeForField
-
-    # Store the coordinates of the highlighted field
-    #highlighted_field = (x, y)
-
-    # Store the position of the highlighted field
-    last_highlighted_field = highlighted_field
 
     # Play sound for the first field
     if sound_mode == 2:
