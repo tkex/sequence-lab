@@ -11,6 +11,8 @@ pygame.mixer.init()
 reward_sound = pygame.mixer.Sound("audio/belohnungston.wav")
 lose_sound = pygame.mixer.Sound("audio/verlorenton.wav")
 
+dull_sound = pygame.mixer.Sound("audio/stumpfer_ton.wav")
+
 # Define pygame window props
 width, height = 300, 300
 window = pygame.display.set_mode((width, height))
@@ -58,11 +60,55 @@ current_level = 0
 # Soundmodus
 sound_mode = 0
 
+# Assignment of fields to sounds (initialized in mode "2")
+field_sounds = {}
+
+# Global variable to check whether sounds have been assigned
+sounds_assigned = False
+
+# Loading all tones for mode "2"
+def load_sounds_for_mode_2():
+    sounds = []
+
+    for i in range(1, 10):
+        sound = pygame.mixer.Sound(f"audio/ton_{i}.wav")
+        sounds.append(sound)
+
+    return sounds
+
+
+# Function for playing the sound for a specific field
+def play_sound_for_field(x, y):
+    if sound_mode == 2 and (x, y) in field_sounds:
+        field_sounds[(x, y)].play()
+    elif sound_mode == 3:
+        dull_sound.play()
+
+
+# Function for assigning sounds to the fields
+def assign_sounds_to_fields():
+    global field_sounds, sounds_assigned
+
+    if not sounds_assigned:
+        sounds = load_sounds_for_mode_2()
+        random.shuffle(sounds)
+        field_index = 0
+
+        for x in range(0, width, blockSizeForField):
+            for y in range(0, height, blockSizeForField):
+                field_sounds[(x, y)] = sounds[field_index % len(sounds)]
+                field_index += 1
+
+        sounds_assigned = True
+
+
 # Playing sounds
 def play_sound(sound):
     # Play only sound if in modi 2 or 3
-    if sound_mode in [2, 3]:
+    if sound_mode == 2:
         sound.play()
+    elif sound_mode == 3:
+        dull_sound.play()
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -140,6 +186,7 @@ def game_start():
     pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
 
+
 def check_for_input(pos):
     global wait_for_input, feedback_highlight, current_sequence_index, game_has_started
 
@@ -155,6 +202,7 @@ def check_for_input(pos):
     if sequence_of_fields[current_sequence_index] == clicked_field:
         print("Nice!")
 
+        play_sound_for_field(clicked_field_x, clicked_field_y)
 
         # Set feedback highlight to red for a correct guess
         feedback_highlight = (clicked_field, RED)
@@ -167,7 +215,7 @@ def check_for_input(pos):
 
             # Play the reward sound if the sequence is guessed correctly
             # (only in sound_modus)
-            play_sound(reward_sound)
+            #play_sound(reward_sound)
 
             # Add new sequence field
             add_new_field_to_sequence()
@@ -178,8 +226,10 @@ def check_for_input(pos):
             # Set timer to display the next field in sequence
             pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
+
         # Set timer for the feedback to be displayed
         pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
+
     else:
         print("Game over")
 
@@ -212,6 +262,8 @@ def end_feedback():
     pygame.time.set_timer(pygame.USEREVENT + 1, 0)
 
 
+
+
 # Loop
 while True:
 
@@ -226,12 +278,18 @@ while True:
             if event.key == pygame.K_1:
                 sound_mode = 1
                 print("Modus 1 aktiviert: Kein Sound")
+
             elif event.key == pygame.K_2:
-                sound_mode = 2
-                print("Modus 2 aktiviert: 9 verschiedene Sounds")
+                if not sounds_assigned:
+                    sound_mode = 2
+                    print("Modus 2 aktiviert: 9 verschiedene Sounds")
+                    print("Jedes Feld hat nun einen individuellen Ton!")
+                    assign_sounds_to_fields()
+
             elif event.key == pygame.K_3:
                 sound_mode = 3
                 print("Modus 3 aktiviert: Dumpfer Sound")
+                print("Jedes Feld hat nun einen dumpfen Ton!")
 
         # Space
         if event.type == pygame.KEYDOWN:
