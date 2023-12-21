@@ -52,7 +52,7 @@ current_sequence_index = 0
 
 # Global variables for the duration of the display and feedback
 highlight_duration = 1000  # Duration of highlighting a field in milliseconds
-feedback_duration = 500    # Duration of the feedback in milliseconds
+feedback_duration = 1000    # Duration of the feedback in milliseconds
 
 # Global var for current lvl
 current_level = 0
@@ -65,6 +65,7 @@ field_sounds = {}
 
 # Global variable to check whether sounds have been assigned
 sounds_assigned = False
+
 
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
@@ -179,6 +180,12 @@ def game_start():
 
     # Store the position of the highlighted field
     last_highlighted_field = highlighted_field
+
+    # Play sound for the first field
+    if sound_mode == 2:
+        play_sound_for_field(*highlighted_field)
+    elif sound_mode == 3:
+        play_sound(dull_sound)
 
     pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
@@ -302,15 +309,16 @@ while True:
         # Player event
         if event.type == pygame.USEREVENT:
             if current_sequence_index < len(sequence_of_fields):
-                highlighted_field = sequence_of_fields[current_sequence_index]
 
-                current_sequence_index += 1
 
                 # Play sound if field is showing
                 if sound_mode == 2:
-                    play_sound_for_field(*highlighted_field)
+                    play_sound_for_field(*sequence_of_fields[current_sequence_index])
                 elif sound_mode == 3:
                     play_sound(dull_sound)
+
+                highlighted_field = sequence_of_fields[current_sequence_index]
+                current_sequence_index += 1
 
                 # Only set the timer if there are other fields in the sequence
                 if current_sequence_index < len(sequence_of_fields):
