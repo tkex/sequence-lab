@@ -303,10 +303,20 @@ while True:
         if event.type == pygame.USEREVENT:
             if current_sequence_index < len(sequence_of_fields):
                 highlighted_field = sequence_of_fields[current_sequence_index]
+
                 current_sequence_index += 1
+
+                # Play sound if field is showing
+                if sound_mode == 2:
+                    play_sound_for_field(*highlighted_field)
+                elif sound_mode == 3:
+                    play_sound(dull_sound)
+
                 # Only set the timer if there are other fields in the sequence
                 if current_sequence_index < len(sequence_of_fields):
                     pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+
+
             else:
                 # Exits the display of the sequence and waits for user input
                 wait_for_input = True
