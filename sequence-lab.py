@@ -202,8 +202,8 @@ def check_for_input(pos):
 
     clicked_field = (clicked_field_x, clicked_field_y)
 
-    # Check that save_highlighted_field is not None before checking
-    if sequence_of_fields[current_sequence_index] == clicked_field:
+    # Check that save_highlighted_field is not None before checking plus whether the index is within the length of the sequence
+    if current_sequence_index < len(sequence_of_fields) and sequence_of_fields[current_sequence_index] == clicked_field:
         print("Nice!")
 
         if sound_mode == 2:
