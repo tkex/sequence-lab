@@ -290,7 +290,7 @@ while True:
             elif event.key == pygame.K_3:
                 sound_mode = 3
                 print("Mode 3 activated: Dull/Muffled sound")
-                print("JMode 3 activated: Every field now has a dull sound")
+                print("Mode 3 activated: Every field now has a dull sound")
 
         # Space
         if event.type == pygame.KEYDOWN:
