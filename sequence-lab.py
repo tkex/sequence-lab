@@ -104,11 +104,8 @@ def assign_sounds_to_fields():
 
 # Playing sounds
 def play_sound(sound):
-    # Play only sound if in modi 2 or 3
-    if sound_mode == 2:
+    if sound_mode in [2, 3]:
         sound.play()
-    elif sound_mode == 3:
-        dull_sound.play()
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
@@ -202,7 +199,10 @@ def check_for_input(pos):
     if sequence_of_fields[current_sequence_index] == clicked_field:
         print("Nice!")
 
-        play_sound_for_field(clicked_field_x, clicked_field_y)
+        if sound_mode == 2:
+            play_sound(field_sounds[clicked_field])
+        elif sound_mode == 3:
+            play_sound(dull_sound)
 
         # Set feedback highlight to red for a correct guess
         feedback_highlight = (clicked_field, RED)
@@ -277,19 +277,20 @@ while True:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
                 sound_mode = 1
-                print("Modus 1 aktiviert: Kein Sound")
+                print("Mode 1 activated: No sound")
 
-            elif event.key == pygame.K_2:
-                if not sounds_assigned:
-                    sound_mode = 2
-                    print("Modus 2 aktiviert: 9 verschiedene Sounds")
-                    print("Jedes Feld hat nun einen individuellen Ton!")
-                    assign_sounds_to_fields()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_2 and not sounds_assigned:
+                sound_mode = 2
+                print("Mode 2 activated: 9 different sounds")
+                print("Each field now has an individual tone!")
+                assign_sounds_to_fields()
+                sounds_assigned = True
 
             elif event.key == pygame.K_3:
                 sound_mode = 3
-                print("Modus 3 aktiviert: Dumpfer Sound")
-                print("Jedes Feld hat nun einen dumpfen Ton!")
+                print("Mode 3 activated: Dull/Muffled sound")
+                print("JMode 3 activated: Every field now has a dull sound")
 
         # Space
         if event.type == pygame.KEYDOWN:
