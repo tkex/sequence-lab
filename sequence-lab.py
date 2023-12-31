@@ -29,9 +29,6 @@ game_has_started = False
 # Var to control if player is guessing the fields
 wait_for_input = False
 
-# Var for position of the specific highlighted field
-#colour_field = None
-
 # Size for each memory field
 blockSizeForField = 100
 
@@ -43,10 +40,12 @@ highlighted_field = None
 
 # Var to keep track of the last highlighted field
 last_highlighted_field = None
+
 feedback_highlight = None
 
 # List to save the sequence of fields
 sequence_of_fields = []
+
 # Index for the current step in the sequence
 current_sequence_index = 0
 
@@ -212,10 +211,6 @@ def check_for_input(pos):
         # Check if the whole sequence has been guessed correctly
         if current_sequence_index == len(sequence_of_fields):
 
-            # Play the reward sound if the sequence is guessed correctly
-            # (only in sound_modus)
-            #play_sound(reward_sound)
-
             # Add event with a n-second delay before starting the new sequence
             pygame.time.set_timer(NEW_ROUND_EVENT, ROUND_PAUSE_TIME)
 
@@ -265,7 +260,7 @@ while True:
             pygame.quit()
             sys.exit()
 
-        # Erkennung der Tastendrücke für Soundmodi
+        # Hotkey for sound modi
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_1:
                 sound_mode = 1
@@ -295,7 +290,6 @@ while True:
         if event.type == pygame.USEREVENT:
             if current_sequence_index < len(sequence_of_fields):
 
-
                 # Play sound if field is showing
                 if sound_mode == 2:
                     play_sound_for_field(*sequence_of_fields[current_sequence_index])
@@ -309,6 +303,8 @@ while True:
                 if current_sequence_index < len(sequence_of_fields):
                     pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
 
+                # Player not allowed to guess / click
+                wait_for_input = False
 
             else:
                 # Exits the display of the sequence and waits for user input
@@ -335,7 +331,7 @@ while True:
             # Add new field to sequence
             add_new_field_to_sequence()
 
-            # Reset of the Sequenceindex
+            # Reset of the sequence index
             current_sequence_index = 0
 
             # Set timer for show new field in the next sequence
