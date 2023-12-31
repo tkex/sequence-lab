@@ -78,6 +78,9 @@ CLICKED_FIELD_COLOUR = BLUE
 SHOWN_FIELD_COLOUR = RED
 WRONG_GUESSES_FIELD_COLOUR = WHITE
 
+# Add var for round time
+round_start_time = 0
+
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
     sounds = []
@@ -161,7 +164,10 @@ def add_new_field_to_sequence():
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index, current_level
+    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index, current_level, round_start_time
+
+    # Set time for log data
+    round_start_time = pygame.time.get_ticks()
 
     # Reset current level (Set to null)
     current_level = 0
@@ -190,7 +196,7 @@ def game_start():
 
 
 def check_for_input(pos):
-    global wait_for_input, feedback_highlight, current_sequence_index, game_has_started
+    global wait_for_input, feedback_highlight, current_sequence_index, game_has_started, round_start_time, sound_mode
 
     # Calculate position of the clicked field
     # Check if mouse click position is within the bounds of the highlighted field
@@ -217,7 +223,6 @@ def check_for_input(pos):
 
         # Check if the whole sequence has been guessed correctly
         if current_sequence_index == len(sequence_of_fields):
-
             # Don't allow clicks if all fields are guessed correctly
             wait_for_input = False
 
@@ -229,6 +234,12 @@ def check_for_input(pos):
 
     else:
         print("Game over")
+
+        # Log game session time and level (for logging)
+        round_end_time = pygame.time.get_ticks()
+        round_duration = (round_end_time - round_start_time) / 1000
+        round_duration = round(round_duration, 2)
+        print(f"Playmode: {sound_mode}, Playtime of round: {round_duration} seconds, Reached level: {current_level}")
 
         # Play the losing sound if an incorrect field is selected
         # (only in sound_modus)
