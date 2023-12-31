@@ -22,6 +22,7 @@ pygame.display.set_caption("Sequence lab!")
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
+BLUE = (65, 105, 225)
 
 # Game control vars
 game_has_started = False
@@ -73,6 +74,9 @@ FEEDBACK_DURATION = 1000
 # Time in ms between each round
 ROUND_PAUSE_TIME = 1500
 
+CLICKED_FIELD_COLOUR = BLUE
+SHOWN_FIELD_COLOUR = RED
+WRONG_GUESSES_FIELD_COLOUR = WHITE
 
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
@@ -123,9 +127,9 @@ def grid():
             rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
             if (x, y) == highlighted_field:
                 # Highlight the selected field
-                pygame.draw.rect(window, RED, rectangle)
+                pygame.draw.rect(window, SHOWN_FIELD_COLOUR, rectangle)
             else:
-                pygame.draw.rect(window, WHITE, rectangle, 1)
+                pygame.draw.rect(window, WRONG_GUESSES_FIELD_COLOUR, rectangle, 1)
 
     if feedback_highlight:
         pygame.draw.rect(window, feedback_highlight[1],
@@ -206,7 +210,7 @@ def check_for_input(pos):
             play_sound(dull_sound)
 
         # Set feedback highlight to red for a correct guess
-        feedback_highlight = (clicked_field, RED)
+        feedback_highlight = (clicked_field, CLICKED_FIELD_COLOUR)
 
         # Increment the sequence index
         current_sequence_index += 1
@@ -214,7 +218,7 @@ def check_for_input(pos):
         # Check if the whole sequence has been guessed correctly
         if current_sequence_index == len(sequence_of_fields):
 
-            # Don't allow clicks if all fields are guessed corrently
+            # Don't allow clicks if all fields are guessed correctly
             wait_for_input = False
 
             # Add event with a n-second delay before starting the new sequence
@@ -234,7 +238,7 @@ def check_for_input(pos):
         game_has_started = False
 
         # Set feedback highlight to white for incorrect guess
-        feedback_highlight = (clicked_field, WHITE)
+        feedback_highlight = (clicked_field, WRONG_GUESSES_FIELD_COLOUR)
 
         # Set timer for the feedback to be displayed
         pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
