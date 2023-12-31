@@ -211,6 +211,9 @@ def check_for_input(pos):
         # Check if the whole sequence has been guessed correctly
         if current_sequence_index == len(sequence_of_fields):
 
+            # Don't allow clicks if all fields are guessed corrently
+            wait_for_input = False
+
             # Add event with a n-second delay before starting the new sequence
             pygame.time.set_timer(NEW_ROUND_EVENT, ROUND_PAUSE_TIME)
 
