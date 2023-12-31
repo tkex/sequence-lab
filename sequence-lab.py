@@ -66,6 +66,11 @@ field_sounds = {}
 # Global variable to check whether sounds have been assigned
 sounds_assigned = False
 
+# Define event-ID
+NEW_ROUND_EVENT = pygame.USEREVENT + 2
+
+# Time in ms between each round
+ROUND_PAUSE_TIME = 1500
 
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
@@ -211,15 +216,8 @@ def check_for_input(pos):
             # (only in sound_modus)
             #play_sound(reward_sound)
 
-            # Add new sequence field
-            add_new_field_to_sequence()
-
-            # Reset sequence index
-            current_sequence_index = 0
-
-            # Set timer to display the next field in sequence
-            pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
-
+            # Add event with a n-second delay before starting the new sequence
+            pygame.time.set_timer(NEW_ROUND_EVENT, ROUND_PAUSE_TIME)
 
         # Set timer for the feedback to be displayed
         pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
@@ -332,6 +330,19 @@ while True:
             if event.key == pygame.K_RETURN and not game_has_started:
                 # Restart game
                 game_start()
+
+        if event.type == NEW_ROUND_EVENT:
+            # Add new field to sequence
+            add_new_field_to_sequence()
+
+            # Reset of the Sequenceindex
+            current_sequence_index = 0
+
+            # Set timer for show new field in the next sequence
+            pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+
+            # Stop timer for new round
+            pygame.time.set_timer(NEW_ROUND_EVENT, 0)
 
     # Background colour
     window.fill(BLACK)
