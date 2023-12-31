@@ -1,7 +1,9 @@
 
+import os
 import pygame
 import sys
 import random
+import time
 
 # Initialize
 pygame.init()
@@ -157,7 +159,7 @@ def add_new_field_to_sequence():
 
             # Update the current level
             current_level += 1
-            print(f"(Reached) Level: {current_level}")
+            print(f"==> (Reached) Level: {current_level}")
             break
 
 
@@ -208,7 +210,7 @@ def check_for_input(pos):
 
     # Check that save_highlighted_field is not None before checking plus whether the index is within the length of the sequence
     if current_sequence_index < len(sequence_of_fields) and sequence_of_fields[current_sequence_index] == clicked_field:
-        print("Nice!")
+        print("Guessed correctly!")
 
         if sound_mode == 2:
             play_sound(field_sounds[clicked_field])
@@ -233,13 +235,36 @@ def check_for_input(pos):
         pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
 
     else:
-        print("Game over")
+        print("-- Game over --")
 
         # Log game session time and level (for logging)
         round_end_time = pygame.time.get_ticks()
         round_duration = (round_end_time - round_start_time) / 1000
         round_duration = round(round_duration, 2)
-        print(f"Playmode: {sound_mode}, Playtime of round: {round_duration} seconds, Reached level: {current_level}")
+
+        # Define and show log
+        log_info = f"Playmode: {sound_mode}, Playtime of round: {round_duration} seconds, Reached level: {current_level}"
+        print(log_info)
+
+        # Save log into file:
+        # Generate unique ID and time stamp for file naming (Unix epoch)
+        unique_id = round(time.time() * 1000)
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+
+        # Create log folder in case it doesn't exist already
+        log_dir = "logs"
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+        # Create filename based on timestamp and the unique id
+        log_filename = f"{log_dir}/log_{timestamp}_{unique_id}.txt"
+
+        # Write log infos into file
+        with open(log_filename, 'w') as file:
+            file.write(log_info)
+
+
+
 
         # Play the losing sound if an incorrect field is selected
         # (only in sound_modus)
