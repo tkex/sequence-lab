@@ -49,10 +49,6 @@ sequence_of_fields = []
 # Index for the current step in the sequence
 current_sequence_index = 0
 
-# Global variables for the duration of the display and feedback
-highlight_duration = 1000  # Duration of highlighting a field in milliseconds
-feedback_duration = 1000    # Duration of the feedback in milliseconds
-
 # Global var for current lvl
 current_level = 0
 
@@ -68,8 +64,15 @@ sounds_assigned = False
 # Define event-ID
 NEW_ROUND_EVENT = pygame.USEREVENT + 2
 
+
+# Global vars for durations
+# Duration of highlighting a field in milliseconds
+HIGHLIGHT_DURATION = 1000
+# Duration of the feedback in milliseconds
+FEEDBACK_DURATION = 1000
 # Time in ms between each round
 ROUND_PAUSE_TIME = 1500
+
 
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
@@ -178,7 +181,7 @@ def game_start():
     elif sound_mode == 3:
         play_sound(dull_sound)
 
-    pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+    pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
 
 
 
@@ -218,7 +221,7 @@ def check_for_input(pos):
             pygame.time.set_timer(NEW_ROUND_EVENT, ROUND_PAUSE_TIME)
 
         # Set timer for the feedback to be displayed
-        pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
+        pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
 
     else:
         print("Game over")
@@ -234,7 +237,7 @@ def check_for_input(pos):
         feedback_highlight = (clicked_field, WHITE)
 
         # Set timer for the feedback to be displayed
-        pygame.time.set_timer(pygame.USEREVENT + 1, feedback_duration)
+        pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
 
         # Disable further input (!)
         wait_for_input = False
@@ -304,7 +307,7 @@ while True:
 
                 # Only set the timer if there are other fields in the sequence
                 if current_sequence_index < len(sequence_of_fields):
-                    pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+                    pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
 
                 # Player not allowed to guess / click
                 wait_for_input = False
@@ -338,7 +341,7 @@ while True:
             current_sequence_index = 0
 
             # Set timer for show new field in the next sequence
-            pygame.time.set_timer(pygame.USEREVENT, highlight_duration)
+            pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
 
             # Stop timer for new round
             pygame.time.set_timer(NEW_ROUND_EVENT, 0)
