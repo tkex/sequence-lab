@@ -9,22 +9,41 @@ import time
 pygame.init()
 pygame.mixer.init()
 
-# Laden der Win/Lose Soundeffekte
-reward_sound = pygame.mixer.Sound("audio/belohnungston.wav")
-lose_sound = pygame.mixer.Sound("audio/verlorenton.wav")
+# Constants for window size
+WINDOW_WIDTH = 300
+WINDOW_HEIGHT = 300
 
-dull_sound = pygame.mixer.Sound("audio/stumpfer_ton.wav")
-
-# Define pygame window props
-width, height = 300, 300
-window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Sequence lab!")
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 
-# Define colours
+# Color constants
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 BLUE = (65, 105, 225)
+
+# Constants for game control
+BLOCK_SIZE = 100  # Size of each memory field
+HIGHLIGHT_DURATION = 1000  # Highlight duration (of a color field) in milliseconds
+ROUND_PAUSE_TIME = 1500  # Time in ms between each round
+FEEDBACK_DURATION = 1000  # Duration of the feedback in milliseconds
+
+# Colors for different states
+CLICKED_FIELD_COLOUR = BLUE
+SHOWN_FIELD_COLOUR = RED
+WRONG_GUESSES_FIELD_COLOUR = WHITE
+
+# Sound paths
+REWARD_SOUND = "audio/belohnungston.wav"
+LOSE_SOUND = "audio/verlorenton.wav"
+DULL_SOUND = "audio/stumpfer_ton.wav"
+
+# Event-IDs
+NEW_ROUND_EVENT = pygame.USEREVENT + 2
+
+# Other constants
+LOG_DIRECTORY = "logs"
+
 
 # Game control vars
 game_has_started = False
@@ -64,22 +83,6 @@ field_sounds = {}
 # Global variable to check whether sounds have been assigned
 sounds_assigned = False
 
-# Define event-ID
-NEW_ROUND_EVENT = pygame.USEREVENT + 2
-
-
-# Global vars for durations
-# Duration of highlighting a field in milliseconds
-HIGHLIGHT_DURATION = 1000
-# Duration of the feedback in milliseconds
-FEEDBACK_DURATION = 1000
-# Time in ms between each round
-ROUND_PAUSE_TIME = 1500
-
-CLICKED_FIELD_COLOUR = BLUE
-SHOWN_FIELD_COLOUR = RED
-WRONG_GUESSES_FIELD_COLOUR = WHITE
-
 # Add var for round time
 round_start_time = 0
 
@@ -99,7 +102,7 @@ def play_sound_for_field(x, y):
     if sound_mode == 2 and (x, y) in field_sounds:
         field_sounds[(x, y)].play()
     elif sound_mode == 3:
-        dull_sound.play()
+        DULL_SOUND.play()
 
 
 # Function for assigning sounds to the fields
@@ -111,8 +114,8 @@ def assign_sounds_to_fields():
         random.shuffle(sounds)
         field_index = 0
 
-        for x in range(0, width, blockSizeForField):
-            for y in range(0, height, blockSizeForField):
+        for x in range(0, WINDOW_WIDTH, blockSizeForField):
+            for y in range(0, WINDOW_HEIGHT, blockSizeForField):
                 field_sounds[(x, y)] = sounds[field_index % len(sounds)]
                 field_index += 1
 
@@ -126,8 +129,8 @@ def play_sound(sound):
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
-    for x in range(0, width, blockSizeForField):
-        for y in range(0, height, blockSizeForField):
+    for x in range(0, WINDOW_WIDTH, blockSizeForField):
+        for y in range(0, WINDOW_HEIGHT, blockSizeForField):
             # Create rectangle at position x, y (with size blockSize * blockSize)
             rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
             if (x, y) == highlighted_field:
@@ -176,7 +179,7 @@ def game_start():
 
     # Set the game as started
     game_has_started = True
-    print(f"The sequence game has started!")
+    print(f"== The sequence game has started! ==")
 
     # Reset the sequence when restarting the game
     sequence_of_fields = []
@@ -191,7 +194,7 @@ def game_start():
     if sound_mode == 2:
         play_sound_for_field(*highlighted_field)
     elif sound_mode == 3:
-        play_sound(dull_sound)
+        play_sound(DULL_SOUND)
 
     pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
 
@@ -215,7 +218,7 @@ def check_for_input(pos):
         if sound_mode == 2:
             play_sound(field_sounds[clicked_field])
         elif sound_mode == 3:
-            play_sound(dull_sound)
+            play_sound(DULL_SOUND)
 
         # Set feedback highlight to red for a correct guess
         feedback_highlight = (clicked_field, CLICKED_FIELD_COLOUR)
@@ -249,15 +252,14 @@ def check_for_input(pos):
         # Save log into file:
         # Generate unique ID and time stamp for file naming (Unix epoch)
         unique_id = round(time.time() * 1000)
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        timestamp = time.strftime("%d%m%Y-%H%M%S")
 
         # Create log folder in case it doesn't exist already
-        log_dir = "logs"
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
+        if not os.path.exists(LOG_DIRECTORY):
+            os.makedirs(LOG_DIRECTORY)
 
         # Create filename based on timestamp and the unique id
-        log_filename = f"{log_dir}/log_{timestamp}_{unique_id}.txt"
+        log_filename = f"{LOG_DIRECTORY}/log_{timestamp}_{unique_id}.txt"
 
         # Write log infos into file
         with open(log_filename, 'w') as file:
@@ -268,7 +270,7 @@ def check_for_input(pos):
 
         # Play the losing sound if an incorrect field is selected
         # (only in sound_modus)
-        play_sound(lose_sound)
+        play_sound(LOSE_SOUND)
 
         # End game if the guess is wrong
         game_has_started = False
@@ -340,7 +342,7 @@ while True:
                 if sound_mode == 2:
                     play_sound_for_field(*sequence_of_fields[current_sequence_index])
                 elif sound_mode == 3:
-                    play_sound(dull_sound)
+                    play_sound(DULL_SOUND)
 
                 highlighted_field = sequence_of_fields[current_sequence_index]
                 current_sequence_index += 1
