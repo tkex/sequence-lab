@@ -23,7 +23,7 @@ RED = (255, 0, 0)
 BLUE = (65, 105, 225)
 
 # Constants for game control
-BLOCK_SIZE = 100  # Size of each memory field
+BLOCK_SIZE_FOR_FIELD = 100  # Size of each memory field
 HIGHLIGHT_DURATION = 1000  # Highlight duration (of a color field) in milliseconds
 ROUND_PAUSE_TIME = 1500  # Time in ms between each round
 FEEDBACK_DURATION = 1000  # Duration of the feedback in milliseconds
@@ -42,49 +42,35 @@ DULL_SOUND = "audio/stumpfer_ton.wav"
 NEW_ROUND_EVENT = pygame.USEREVENT + 2
 FEEDBACK_EVENT = pygame.USEREVENT + 1
 
-# Other constants
+# Log constants
 LOG_DIRECTORY = "logs"
 
 # Game control vars
-game_has_started = False
+game_has_started = False  # Control flag to determine if game has started
 
-# Var to control if player is guessing the fields
-wait_for_input = False
+wait_for_input = False  # Control flag for waiting for player input
 
-# Size for each memory field
-blockSizeForField = 100
+highlight_dur = 1000  # Duration (in ms) for how long a field is highlighted
 
-# Highlight duration (of a colour field) in milliseconds
-highlight_dur = 1000
+highlighted_field = None  # Stores the currently highlighted field coordinates (X/Y)
 
-# Save highlighted fields
-highlighted_field = None
+last_highlighted_field = None  # Stores the last field that was highlighted
 
-# Var to keep track of the last highlighted field
-last_highlighted_field = None
+feedback_highlight = None  # Stores information for highlighting feedback (position and color)
 
-feedback_highlight = None
+sequence_of_fields = []  # List to save the sequence of fields that the player needs to remember sequentially
 
-# List to save the sequence of fields
-sequence_of_fields = []
+current_sequence_idx = 0  # Index to determine the current step in the sequence the player is at
 
-# Index for the current step in the sequence
-current_sequence_index = 0
+current_level = 0  # Var to track the current level
 
-# Global var for current lvl
-current_level = 0
+sound_mode = 0  # Var to control the sound mode (0: no sound, 1: randomized sounds, 3: dull sounds)
 
-# Soundmodus
-sound_mode = 0
+field_sounds = {}  # Dictionary to map fields to (randomized) sounds
 
-# Assignment of fields to sounds (initialized in mode "2")
-field_sounds = {}
+sounds_assigned = False  # Control flag to check if sounds have been assigned to fields
 
-# Global variable to check whether sounds have been assigned
-sounds_assigned = False
-
-# Add var for round time
-round_start_time = 0
+round_start_time = 0  # Var to store the start time (of the current round)
 
 # ------------------------------------------
 # *** *** *** *** GAME LOGIC *** *** *** ***
@@ -118,8 +104,8 @@ def assign_sounds_to_fields():
         random.shuffle(sounds)
         field_index = 0
 
-        for x in range(0, WINDOW_WIDTH, blockSizeForField):
-            for y in range(0, WINDOW_HEIGHT, blockSizeForField):
+        for x in range(0, WINDOW_WIDTH, BLOCK_SIZE_FOR_FIELD):
+            for y in range(0, WINDOW_HEIGHT, BLOCK_SIZE_FOR_FIELD):
                 field_sounds[(x, y)] = sounds[field_index % len(sounds)]
                 field_index += 1
 
@@ -134,10 +120,10 @@ def play_sound(sound):
 
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
-    for x in range(0, WINDOW_WIDTH, blockSizeForField):
-        for y in range(0, WINDOW_HEIGHT, blockSizeForField):
+    for x in range(0, WINDOW_WIDTH, BLOCK_SIZE_FOR_FIELD):
+        for y in range(0, WINDOW_HEIGHT, BLOCK_SIZE_FOR_FIELD):
             # Create rectangle at position x, y (with size blockSize * blockSize)
-            rectangle = pygame.Rect(x, y, blockSizeForField, blockSizeForField)
+            rectangle = pygame.Rect(x, y, BLOCK_SIZE_FOR_FIELD, BLOCK_SIZE_FOR_FIELD)
             if (x, y) == highlighted_field:
                 # Highlight the selected field
                 pygame.draw.rect(window, SHOWN_FIELD_COLOUR, rectangle)
@@ -146,8 +132,8 @@ def grid():
 
     if feedback_highlight:
         pygame.draw.rect(window, feedback_highlight[1],
-                         pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], blockSizeForField,
-                                     blockSizeForField))
+                         pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], BLOCK_SIZE_FOR_FIELD,
+                                     BLOCK_SIZE_FOR_FIELD))
 
 
 def add_new_field_to_sequence():
@@ -155,8 +141,8 @@ def add_new_field_to_sequence():
 
     while True:
         # Random field
-        x = random.randint(0, 2) * blockSizeForField
-        y = random.randint(0, 2) * blockSizeForField
+        x = random.randint(0, 2) * BLOCK_SIZE_FOR_FIELD
+        y = random.randint(0, 2) * BLOCK_SIZE_FOR_FIELD
 
         new_field = (x, y)
 
@@ -174,7 +160,7 @@ def add_new_field_to_sequence():
 
 def game_start():
     # Retrieve global defined vars (above)
-    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_index, current_level, round_start_time
+    global game_has_started, wait_for_input, highlighted_field, sequence_of_fields, current_sequence_idx, current_level, round_start_time
 
     # Set time for log data
     round_start_time = pygame.time.get_ticks()
@@ -188,9 +174,9 @@ def game_start():
 
     # Reset the sequence when restarting the game
     sequence_of_fields = []
-    current_sequence_index = 0
+    current_sequence_idx = 0
     add_new_field_to_sequence()
-    highlighted_field = sequence_of_fields[current_sequence_index]
+    highlighted_field = sequence_of_fields[current_sequence_idx]
 
     # False since the user is not in input state if game starts
     wait_for_input = False
@@ -205,18 +191,18 @@ def game_start():
 
 
 def check_for_input(pos):
-    global wait_for_input, feedback_highlight, current_sequence_index, game_has_started, round_start_time, sound_mode
+    global wait_for_input, feedback_highlight, current_sequence_idx, game_has_started, round_start_time, sound_mode
 
     # Calculate position of the clicked field
     # Check if mouse click position is within the bounds of the highlighted field
     # For X-Axis (top [0]) and Y-Axis (line under [1]):
-    clicked_field_x = pos[0] // blockSizeForField * blockSizeForField
-    clicked_field_y = pos[1] // blockSizeForField * blockSizeForField
+    clicked_field_x = pos[0] // BLOCK_SIZE_FOR_FIELD * BLOCK_SIZE_FOR_FIELD
+    clicked_field_y = pos[1] // BLOCK_SIZE_FOR_FIELD * BLOCK_SIZE_FOR_FIELD
 
     clicked_field = (clicked_field_x, clicked_field_y)
 
     # Check that save_highlighted_field is not None before checking plus whether the index is within the length of the sequence
-    if current_sequence_index < len(sequence_of_fields) and sequence_of_fields[current_sequence_index] == clicked_field:
+    if current_sequence_idx < len(sequence_of_fields) and sequence_of_fields[current_sequence_idx] == clicked_field:
         print("Guessed correctly!")
 
         if sound_mode == 2:
@@ -228,10 +214,10 @@ def check_for_input(pos):
         feedback_highlight = (clicked_field, CLICKED_FIELD_COLOUR)
 
         # Increment the sequence index
-        current_sequence_index += 1
+        current_sequence_idx += 1
 
         # Check if the whole sequence has been guessed correctly
-        if current_sequence_index == len(sequence_of_fields):
+        if current_sequence_idx == len(sequence_of_fields):
             # Don't allow clicks if all fields are guessed correctly
             wait_for_input = False
 
@@ -265,7 +251,7 @@ def check_for_input(pos):
         # Create filename based on timestamp and the unique id
         log_filename = f"{LOG_DIRECTORY}/log_{timestamp}_{unique_id}.txt"
 
-        # Write log infos into file
+        # Write log info into file
         with open(log_filename, 'w') as file:
             file.write(log_info)
 
@@ -335,19 +321,19 @@ while True:
 
         # Player event
         if event.type == pygame.USEREVENT:
-            if current_sequence_index < len(sequence_of_fields):
+            if current_sequence_idx < len(sequence_of_fields):
 
                 # Play sound if field is showing
                 if sound_mode == 2:
-                    play_sound_for_field(*sequence_of_fields[current_sequence_index])
+                    play_sound_for_field(*sequence_of_fields[current_sequence_idx])
                 elif sound_mode == 3:
                     play_sound(DULL_SOUND)
 
-                highlighted_field = sequence_of_fields[current_sequence_index]
-                current_sequence_index += 1
+                highlighted_field = sequence_of_fields[current_sequence_idx]
+                current_sequence_idx += 1
 
                 # Only set the timer if there are other fields in the sequence
-                if current_sequence_index < len(sequence_of_fields):
+                if current_sequence_idx < len(sequence_of_fields):
                     pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
 
                 # Player not allowed to guess / click
@@ -357,7 +343,7 @@ while True:
                 # Exits the display of the sequence and waits for user input
                 wait_for_input = True
                 highlighted_field = None
-                current_sequence_index = 0
+                current_sequence_idx = 0
                 # Stop timer
                 pygame.time.set_timer(pygame.USEREVENT, 0)
 
@@ -379,7 +365,7 @@ while True:
             add_new_field_to_sequence()
 
             # Reset of the sequence index
-            current_sequence_index = 0
+            current_sequence_idx = 0
 
             # Set timer for show new field in the next sequence
             pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
