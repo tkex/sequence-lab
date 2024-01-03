@@ -34,9 +34,9 @@ SHOWN_FIELD_COLOUR = RED
 WRONG_GUESSES_FIELD_COLOUR = WHITE
 
 # Sound paths
-REWARD_SOUND = "audio/belohnungston.wav"
-LOSE_SOUND = "audio/verlorenton.wav"
-DULL_SOUND = "audio/stumpfer_ton.wav"
+REWARD_SOUND = pygame.mixer.Sound("audio/belohnungston.wav")
+LOSE_SOUND = pygame.mixer.Sound("audio/verlorenton.wav")
+DULL_SOUND = pygame.mixer.Sound("audio/stumpfer_ton.wav")
 
 # Event-IDs
 NEW_ROUND_EVENT = pygame.USEREVENT + 2
@@ -49,8 +49,6 @@ LOG_DIRECTORY = "logs"
 game_has_started = False  # Control flag to determine if game has started
 
 wait_for_input = False  # Control flag for waiting for player input
-
-highlight_dur = 1000  # Duration (in ms) for how long a field is highlighted
 
 highlighted_field = None  # Stores the currently highlighted field coordinates (X/Y)
 
@@ -87,6 +85,12 @@ def load_sounds_for_mode_2():
     return sounds
 
 
+# Playing sounds
+def play_sound(sound):
+    if sound_mode in [2, 3]:
+        sound.play()
+
+
 # Function for playing the sound for a specific field
 def play_sound_for_field(x, y):
     if sound_mode == 2 and (x, y) in field_sounds:
@@ -110,12 +114,6 @@ def assign_sounds_to_fields():
                 field_index += 1
 
         sounds_assigned = True
-
-
-# Playing sounds
-def play_sound(sound):
-    if sound_mode in [2, 3]:
-        sound.play()
 
 
 def grid():
@@ -288,18 +286,20 @@ def end_feedback():
 while True:
 
     for event in pygame.event.get():
-        # Close event
+        # Pygame close event
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
 
-        # Hotkey for sound modi
+        # Hotkeys for different sound modi (1, 2 and 3)
         if event.type == pygame.KEYDOWN:
+            # If "1" is pressed
             if event.key == pygame.K_1:
                 sound_mode = 1
                 print("Mode 1 activated: No sound")
 
         if event.type == pygame.KEYDOWN:
+            # If "2" is pressed
             if event.key == pygame.K_2 and not sounds_assigned:
                 sound_mode = 2
                 print("Mode 2 activated: 9 different sounds")
@@ -307,16 +307,25 @@ while True:
                 assign_sounds_to_fields()
                 sounds_assigned = True
 
-            elif event.key == pygame.K_3:
+            # If "3" is pressed
+            elif event.key == pygame.K_3 and not sounds_assigned:
                 sound_mode = 3
                 print("Mode 3 activated: Dull/Muffled sound")
                 print("Mode 3 activated: Every field now has a dull sound")
 
-        # Space
+        # If "Space" is pressed, start the game
         if event.type == pygame.KEYDOWN:
-            # If space is pressed and game not started yet
+            # If space is pressed and game has not started yet
             if event.key == pygame.K_SPACE and not game_has_started:
+
                 # Start the game
+                game_start()
+
+        # If "Enter" is pressed, restart the game
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN and not game_has_started:
+
+                # Restart game
                 game_start()
 
         # Player event
@@ -350,15 +359,9 @@ while True:
         if event.type == pygame.MOUSEBUTTONDOWN and wait_for_input:
             check_for_input(pygame.mouse.get_pos())
 
-        # Will be called after 500ms from check for input
+        # Will be called after 1000ms (1sec) from check for input
         if event.type == FEEDBACK_EVENT:
             end_feedback()
-
-        # Check for Enter key to restart the game
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN and not game_has_started:
-                # Restart game
-                game_start()
 
         if event.type == NEW_ROUND_EVENT:
             # Add new field to sequence
@@ -372,6 +375,7 @@ while True:
 
             # Stop timer for new round
             pygame.time.set_timer(NEW_ROUND_EVENT, 0)
+
 
     # Background colour
     window.fill(BLACK)
