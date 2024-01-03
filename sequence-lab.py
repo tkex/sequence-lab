@@ -40,10 +40,10 @@ DULL_SOUND = "audio/stumpfer_ton.wav"
 
 # Event-IDs
 NEW_ROUND_EVENT = pygame.USEREVENT + 2
+FEEDBACK_EVENT = pygame.USEREVENT + 1
 
 # Other constants
 LOG_DIRECTORY = "logs"
-
 
 # Game control vars
 game_has_started = False
@@ -86,6 +86,10 @@ sounds_assigned = False
 # Add var for round time
 round_start_time = 0
 
+# ------------------------------------------
+# *** *** *** *** GAME LOGIC *** *** *** ***
+# ------------------------------------------
+
 # Loading all tones for mode "2"
 def load_sounds_for_mode_2():
     sounds = []
@@ -127,6 +131,7 @@ def play_sound(sound):
     if sound_mode in [2, 3]:
         sound.play()
 
+
 def grid():
     # Go through the grid in horizontal (x) and vertical (y) axis
     for x in range(0, WINDOW_WIDTH, blockSizeForField):
@@ -143,6 +148,7 @@ def grid():
         pygame.draw.rect(window, feedback_highlight[1],
                          pygame.Rect(feedback_highlight[0][0], feedback_highlight[0][1], blockSizeForField,
                                      blockSizeForField))
+
 
 def add_new_field_to_sequence():
     global current_level
@@ -164,7 +170,6 @@ def add_new_field_to_sequence():
             current_level += 1
             print(f"==> (Reached) Level: {current_level}")
             break
-
 
 
 def game_start():
@@ -197,7 +202,6 @@ def game_start():
         play_sound(DULL_SOUND)
 
     pygame.time.set_timer(pygame.USEREVENT, HIGHLIGHT_DURATION)
-
 
 
 def check_for_input(pos):
@@ -235,7 +239,7 @@ def check_for_input(pos):
             pygame.time.set_timer(NEW_ROUND_EVENT, ROUND_PAUSE_TIME)
 
         # Set timer for the feedback to be displayed
-        pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
+        pygame.time.set_timer(FEEDBACK_EVENT, FEEDBACK_DURATION)
 
     else:
         print("-- Game over --")
@@ -265,9 +269,6 @@ def check_for_input(pos):
         with open(log_filename, 'w') as file:
             file.write(log_info)
 
-
-
-
         # Play the losing sound if an incorrect field is selected
         # (only in sound_modus)
         play_sound(LOSE_SOUND)
@@ -279,7 +280,7 @@ def check_for_input(pos):
         feedback_highlight = (clicked_field, WRONG_GUESSES_FIELD_COLOUR)
 
         # Set timer for the feedback to be displayed
-        pygame.time.set_timer(pygame.USEREVENT + 1, FEEDBACK_DURATION)
+        pygame.time.set_timer(FEEDBACK_EVENT, FEEDBACK_DURATION)
 
         # Disable further input (!)
         wait_for_input = False
@@ -294,12 +295,10 @@ def end_feedback():
     last_highlighted_field = None
 
     # Stop Feedback event
-    pygame.time.set_timer(pygame.USEREVENT + 1, 0)
+    pygame.time.set_timer(FEEDBACK_EVENT, 0)
 
 
-
-
-# Loop
+# Main-Loop
 while True:
 
     for event in pygame.event.get():
@@ -366,7 +365,7 @@ while True:
             check_for_input(pygame.mouse.get_pos())
 
         # Will be called after 500ms from check for input
-        if event.type == pygame.USEREVENT + 1:
+        if event.type == FEEDBACK_EVENT:
             end_feedback()
 
         # Check for Enter key to restart the game
